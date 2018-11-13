@@ -19,7 +19,7 @@ cas.addEventListener(clickEvtName,function(evt){
 	// 获取鼠标视口坐标,传递参数到drawPoint
 	 x = device?event.touches[0].clientX:event.clientX;
 	 y = device?event.touches[0].clientY:event.clientY;
-	drawPoint(context,x,y);
+	drawT(context,x,y);
 },false);
 
 
@@ -30,7 +30,7 @@ cas.addEventListener(moveEvtName,function(evt){
 		// 获取鼠标视口坐标,传递参数到drawPoint
 		 x2 = device?event.touches[0].clientX:event.clientX;
 		 y2 = device?event.touches[0].clientY:event.clientY;
-		drawLine(context,x,y,x2,y2);
+		drawT(context,x,y,x2,y2);
 		x=x2;
 		y=y2;
 	}else{
@@ -96,7 +96,7 @@ function drawMask(context){
 	context.restore();
 	context.globalCompositeOperation ="destination-out";
 }
-
+/*
 // 在画布上画半径为30的圆
 function drawPoint(context,x,y){
 	console.log("传递实参个数:"+arguments.length);
@@ -119,8 +119,8 @@ function drawLine(context,x,y,x2,y2){
 	context.stroke();
 	context.restore();
 }
-/*
-function draw(context,x,y,x2,y2){
+*/
+function drawT(context,x,y,x2,y2){
 	context.save();
 	context.beginPath();
 	if(arguments.length==3){
@@ -135,7 +135,7 @@ function draw(context,x,y,x2,y2){
 	}
 	context.restore();
 }
-*/
+
 function clearRect(context){
 	context.clearRect(0,0,_w,_h);
 }
@@ -157,5 +157,5 @@ function getTransparencyPercent(context){
 }
 window.onload = function(){
 	drawMask(context);
-	drawPoint(context);
+	drawT(context);
 };
