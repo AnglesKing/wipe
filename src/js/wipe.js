@@ -123,7 +123,7 @@ function drawLine(context,x,y,x2,y2){
 function drawT(context,x,y,x2,y2){
 	context.save();
 	context.beginPath();
-	if(arguments.length==3){
+	if(arguments.length===3){
 		context.arc(x,y,raduis,0,2*Math.PI);
 		context.fillStyle = "#eee";
 		context.fill();
