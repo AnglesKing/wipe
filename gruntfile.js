@@ -48,11 +48,11 @@ module.exports = function(grunt){
 		},
 		replace:{
 			example:{
-				src:['sample/js/index.html'],
+				src:['sample/index.html'],
 				overwrite:true,
 				replacements:[{
 					from:/\d[\.]\d[\.]\d/g,
-					to:'test'
+					to:'<%= pkg.version %>'
 				}]
 			}
 		}
