@@ -5,17 +5,36 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<title>wipe</title>
 	<style>
-	#cas{
+	/*#cas{
 		background: url(images/wipe1.jpg) center 0 no-repeat;
 		-webkit-background-size: cover;
 		background-size: cover;
-	}
+	}*/
 	</style>
 </head>
 <body>
 <canvas id="cas" width="375" height="667"></canvas>
-<span>在主分支上的修改</span>
-<span>在db01分支上的修改</span>
+
 </body>
 </html>
 <script src="js/wipe.js"></script>
+<script>
+	var wipeConfig = {
+	    id:"cas",
+		coverType:"image",
+		color:"",
+		imgurl:"images/wipe2.jpg",
+		backImgurl:"images/wipe1.jpg",
+		width:"375",
+		height:"667",
+		radius:"10",	//涂抹笔的半径
+		transpercent:70,	//透明面积占画布的百分比,超出后显示
+		wipeCallback:wipeCallback, //用户自定义函数名称
+	}
+	var cas01 = new Wipe(wipeConfig);
+function wipeCallback(percent){
+	if (percent>50) {
+		console.log("透明面积超过50%,查看底图");
+	}
+}
+</script>

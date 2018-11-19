@@ -1,161 +1,133 @@
-var cas = document.getElementById('cas');
-var context = cas.getContext("2d");
-var raduis = 20;	//涂抹的半径
-var _w = cas.width,_h = cas.height;
-var x,y,x2,y2;
-var t;
-var ismousedown = false;//表示鼠标状态,是否按下,默认为未按下
-// device保存设备类型,如果是移动端则为true,PC端为false
-var device = (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(navigator.userAgent.toLowerCase()));
-alert(navigator.userAgent);
-console.log(device);
-var clickEvtName = device? "touchstart" : "mousedown";
-var moveEvtName = device? "touchmove" : "mousemove";
-var endEvtName = device? "touchend" : "mouseup";
-
-cas.addEventListener(clickEvtName,function(evt){
-	ismousedown = true;
-	var event = evt || window.event;
-	// 获取鼠标视口坐标,传递参数到drawPoint
-	 x = device?event.touches[0].clientX:event.clientX;
-	 y = device?event.touches[0].clientY:event.clientY;
-	drawT(context,x,y);
-},false);
-
-
-cas.addEventListener(moveEvtName,function(evt){
-	if (ismousedown) {
-		var event = evt || window.event;
-		event.preventDefault();
-		// 获取鼠标视口坐标,传递参数到drawPoint
-		 x2 = device?event.touches[0].clientX:event.clientX;
-		 y2 = device?event.touches[0].clientY:event.clientY;
-		drawT(context,x,y,x2,y2);
-		x=x2;
-		y=y2;
-	}else{
-		return false;
-	}
-},false);
-
-
-cas.addEventListener(endEvtName,function(){
-	ismousedown = false;
-	t=0;
-	if (getTransparencyPercent(context)>50) {
-		// alert("超过了50%面积");
-		clearRect(context);
-	}
-},false);
-
 /*
-// 在canvas画布上监听自定义事件,调用drawPoint函数
-cas.addEventListener("mousedown",function(evt){
-	var event = evt || window.event;
-	// 获取鼠标视口坐标,传递参数到drawPoint
-	 x = event.clientX; 
-	 y = event.clientY;
-	drawPoint(context,x,y);
-	ismousedown = true;
-	console.log(ismousedown);
-},false);
-
-cas.addEventListener("mousemove",function(evt){
-	if (ismousedown) {
-		var event = evt || window.event;
-		event.preventDefault();
-		// 获取鼠标视口坐标,传递参数到drawPoint
-		 x2 = event.clientX;
-		 y2 = event.clientY;
-		drawLine(context,x,y,x2,y2);
-		x=x2;
-		y=y2;
-	}else{
-		return false;
-	}
-},false);
-
-
-cas.addEventListener("mouseup",function(){
-	ismousedown = false;
-	t=0;
-	if (getTransparencyPercent(context)>50) {
-		// alert("超过了50%面积");
-		clearRect(context);
-	}
-},false);
+author: KIT
+data：	2018-11-16
+email: wyzmyxdz@163.com
 */
-//生成画布上的遮罩，默认颜色#666
-function drawMask(context){
-	// 保存当前绘图状态
-	context.save();
-	context.fillStyle = "rgba(122,122,122,.9)";
-	//画一个矩形区域，前两个参数为坐标，后两个参数为宽高
-	context.fillRect(0,0,_w,_h);
-	// 恢复原有绘图状态
-	context.restore();
-	context.globalCompositeOperation ="destination-out";
+function Wipe(obj){
+    this.conID = obj.id;
+    this.cas = document.getElementById(this.conID);
+    this.cas.style.backgroundImage = "url("+obj.backImgurl+")";
+    this.context = cas.getContext("2d");
+    this._w = obj.width;
+    this._h = obj.height;
+    this.radius = obj.radius; //涂抹的半径
+    this.moveX = 0;
+    this.moveY = 0;
+    this.isMouseDown = false;//表示鼠标的状态，是否按下，默认为未按下false，按下true
+    this.color = obj.color || "#666"; 
+    this.imgurl = obj.imgurl ;
+    this.coverType = obj.coverType;
+    this.wipeCallback = obj.wipeCallback;
+    this.transpercent = obj.percent;
+    this.drawMask();
+    this.addEvent();
 }
-/*
-// 在画布上画半径为30的圆
-function drawPoint(context,x,y){
-	console.log("传递实参个数:"+arguments.length);
-	context.save();
-	context.beginPath();
-	context.arc(x,y,raduis,0,2*Math.PI);
-	context.fillStyle = "#eee";
-	context.fill();
-	context.restore();
-}
+//生成画布上的遮罩，默认为颜色#666
+Wipe.prototype.drawMask=function(){
+    if (this.coverType === "color") {
+        this.context.fillStyle=this.color;
+        this.context.fillRect(0,0,this._w,this._h);
+        this.context.globalCompositeOperation = "destination-out";
+    }else{
+        var pic = new Image();
+        pic.src = this.imgurl;
+        var that = this;
+        pic.onload = function(){
+            that.context.drawImage(pic,0,0,pic.width,pic.height,0,0,that._w,that._h);
+            that.context.globalCompositeOperation = "destination-out";
+        };
+    }
+};
+//drawT()画点和画线函数
+//参数：如果只有两个参数，函数功能画圆，x1,y1即圆的中心坐标
+//如果传递四个参数，函数功能画线，x1,y1为起始坐标，x2,y2为结束坐标
+Wipe.prototype.drawT = function(x1,y1,x2,y2){
+    if( arguments.length === 2){
+        //调用的是画点功能
+        this.context.save();
+        this.context.beginPath();
+        this.context.arc(x1,y1,this.radius,0,2*Math.PI);
+        this.context.fillStyle = "rgba(255,255,255,255)";
+        this.context.fill();
+        this.context.restore();
+    }else if(arguments.length === 4){
+        //调用的是画线功能
+        this.context.save();
+        this.context.beginPath();
+        this.context.lineCap = "round";
+        this.context.lineWidth = this.radius*2;
+        this.context.moveTo(x1,y1);
+        this.context.lineTo(x2,y2);
+        this.context.stroke();
+        this.context.restore();
+    }else{
+        return false;
+    }
+};
+//清除画布
+Wipe.prototype.clearRect = function (){
+    this.context.clearRect(0,0,this._w, this._h);
+};
+//获取透明点占整个画布的百分比
+Wipe.prototype.getTransparencyPercent = function(){
+    var t = 0;
+    var imgData = this.context.getImageData(0,0,this._w,this._h);
+    for(var i =0; i<imgData.data.length; i+=4){
+        var a = imgData.data[i+3];
+        if( a === 0 ){
+            t++;
+        }
+    }
+    this.percents =  (t / (this._w*this._h) )*100;
+    console.log("占总面积"+ Math.ceil(this.percents) +"%" );
+    return this.percents.toFixed(2); //截取小数点两位
+};
+//添加自定义监听事件
+Wipe.prototype.addEvent = function(){
+    //device保存设备类型，如果是移动端则为true，PC端为false
+    this.device = (/android|webos|iPhone|ipad|ipod|blackberry|iemobile|opera mini/i.test(navigator.userAgent.toLowerCase()));
+    console.log(this.device);
+    var clickEvtName = this.device ? "touchstart" : "mousedown";
+    var moveEvtName = this.device ? "touchmove" : "mousemove";
+    var endEvtName = this.device ? "touchend" : "mouseup";
+    var that = this;
+    this.cas.addEventListener(clickEvtName,function(evt){
+        that.isMouseDown = true;
+        var event = evt || window.event;
+        //获取鼠标在视口的坐标，传递参数到drawPoint
+        that.moveX = that.device ?  event.touches[0].clientX : event.clientX;
+        that.moveY = that.device ?  event.touches[0].clientY : event.clientY;
+        that.drawT(that.moveX,that.moveY);
+    },false);
+    //增加监听"mousemove",调用drawPoint函数
+    this.cas.addEventListener(moveEvtName,function(evt){
+        //判断，当isMouseDown为true时，才执行下面的操作
+        console.log(that.isMouseDown);
+        if( !that.isMouseDown ){
+            return false;
+        }else{
+            var event = evt || window.event;
+            event.preventDefault();
+            var x2 = that.device ? event.touches[0].clientX : event.clientX;
+            var y2 = that.device ? event.touches[0].clientY : event.clientY;
+            //drawPoint(context,a,b);
+            that.drawT(that.moveX,that.moveY,x2,y2);
+            //每次的结束点变成下一次划线的开始点
+            that.moveX = x2;
+            that.moveY = y2;
+        }
+    },false);
+    this.cas.addEventListener(endEvtName,function(){
+        //还原isMouseDown 为false
+        that.isMouseDown = false;
+        // 借用外部的处理函数
+        var percent = that.getTransparencyPercent();
+        // 调用同名的全局函数
+        that.wipeCallback.call(window,percent);
 
-// 划线
-function drawLine(context,x,y,x2,y2){
-	console.log("传递实参个数:"+arguments.length);
-	context.save();
-	context.beginPath();
-	context.lineWidth=raduis*2;
-	context.moveTo(x,y);
-	context.lineTo(x2,y2);
-	context.stroke();
-	context.restore();
-}
-*/
-function drawT(context,x,y,x2,y2){
-	context.save();
-	context.beginPath();
-	if(arguments.length===3){
-		context.arc(x,y,raduis,0,2*Math.PI);
-		context.fillStyle = "#eee";
-		context.fill();
-	}else{
-		context.lineWidth=raduis*2;
-		context.moveTo(x,y);
-		context.lineTo(x2,y2);
-		context.stroke();
-	}
-	context.restore();
-}
-
-function clearRect(context){
-	context.clearRect(0,0,_w,_h);
-}
-
-function getTransparencyPercent(context){
-	var imgdata = context.getImageData(0,0,_w,_h);
-	console.log(imgdata);
-	for (var i = 0; i < imgdata.data.length; i+=4) {
-		var a = imgdata.data[i+3];
-		if (a === 0) {
-			t++;
-		}
-	}
-	var percent = (t/(_w*_h))*100;
-	console.log("透明点个数: "+ t);
-	console.log("占总面积: " + Math.ceil(percent)+"%");
-	//return percent.toFixed(2);//截取小数点两位
-	return Math.round(percent);
-}
-window.onload = function(){
-	drawMask(context);
-	drawT(context);
+        if( percent > that.transpercent){
+            alert("超过了50%的面积");
+            that.clearRect();
+        }
+    },false);
 };
