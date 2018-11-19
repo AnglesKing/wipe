@@ -32,9 +32,9 @@
 		wipeCallback:wipeCallback, //用户自定义函数名称
 	}
 	var cas01 = new Wipe(wipeConfig);
-function wipeCallback(percent){
-	if (percent>50) {
-		console.log("透明面积超过50%,查看底图");
+	function wipeCallback(percent){
+		if (percent>50) {
+			console.log("透明面积超过50%,查看底图");
+		}
 	}
-}
 </script>
