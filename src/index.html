@@ -5,11 +5,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<title>wipe</title>
 	<style>
-	/*#cas{
-		background: url(images/wipe1.jpg) center 0 no-repeat;
-		-webkit-background-size: cover;
-		background-size: cover;
-	}*/
+	#cas{
+		position: absolute;
+		left: 50px;
+		top: 30px;
+	}
 	</style>
 </head>
 <body>
@@ -30,6 +30,7 @@
 		radius:"10",	//涂抹笔的半径
 		transpercent:70,	//透明面积占画布的百分比,超出后显示
 		wipeCallback:wipeCallback, //用户自定义函数名称
+		text:"我害怕你的呼吸",
 	}
 	var cas01 = new Wipe(wipeConfig);
 	function wipeCallback(percent){

@@ -19,14 +19,15 @@ function Wipe(obj){
     this.coverType = obj.coverType;
     this.wipeCallback = obj.wipeCallback;
     this.transpercent = obj.percent;
-    this.drawMask();
+    this.drawMask(obj.text);
     this.addEvent();
 }
 //生成画布上的遮罩，默认为颜色#666
-Wipe.prototype.drawMask=function(){
+Wipe.prototype.drawMask=function(text){
+    console.log(text);
     if (this.coverType === "color") {
         this.context.fillStyle=this.color;
-        this.context.fillRect(0,0,this._w,this._h);
+        this.context.fillRect(0,0,this.cas._w,this._h);
         this.context.globalCompositeOperation = "destination-out";
     }else{
         var pic = new Image();
@@ -35,6 +36,9 @@ Wipe.prototype.drawMask=function(){
         pic.onload = function(){
             that.context.drawImage(pic,0,0,pic.width,pic.height,0,0,that._w,that._h);
             that.context.globalCompositeOperation = "destination-out";
+            that.context.font="30px Georgia";
+            that.context.fillStyle = "#000";
+            that.context.fillText(text,100,that._h/2-30);
         };
     }
 };
@@ -91,12 +95,15 @@ Wipe.prototype.addEvent = function(){
     var moveEvtName = this.device ? "touchmove" : "mousemove";
     var endEvtName = this.device ? "touchend" : "mouseup";
     var that = this;
+    var sTop = document.documentElement.scrollTop || document.body.scrollTop;
+    var sLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+
     this.cas.addEventListener(clickEvtName,function(evt){
         that.isMouseDown = true;
         var event = evt || window.event;
         //获取鼠标在视口的坐标，传递参数到drawPoint
-        that.moveX = that.device ?  event.touches[0].clientX : event.clientX;
-        that.moveY = that.device ?  event.touches[0].clientY : event.clientY;
+        that.moveX = that.device ?  event.touches[0].clientX-getAllLeft(that.cas)+sLeft : event.clientX-getAllLeft(that.cas)+sLeft;
+        that.moveY = that.device ?  event.touches[0].clientY-getAllTop(that.cas)+sTop : event.clientY-getAllTop(that.cas)+sTop;
         that.drawT(that.moveX,that.moveY);
     },false);
     //增加监听"mousemove",调用drawPoint函数
@@ -108,8 +115,8 @@ Wipe.prototype.addEvent = function(){
         }else{
             var event = evt || window.event;
             event.preventDefault();
-            var x2 = that.device ? event.touches[0].clientX : event.clientX;
-            var y2 = that.device ? event.touches[0].clientY : event.clientY;
+            var x2 = that.device ? event.touches[0].clientX-getAllLeft(that.cas)+sLeft : event.clientX-getAllLeft(that.cas)+sLeft;
+            var y2 = that.device ? event.touches[0].clientY-getAllTop(that.cas)+sTop : event.clientY-getAllTop(that.cas)+sTop;
             //drawPoint(context,a,b);
             that.drawT(that.moveX,that.moveY,x2,y2);
             //每次的结束点变成下一次划线的开始点
@@ -131,3 +138,20 @@ Wipe.prototype.addEvent = function(){
         }
     },false);
 };
+// 封装一个getAllLeft()函数,找到元素所有水平方向的偏移
+    function getAllLeft(element){
+        var allLeft = 0;
+        while(element){
+            allLeft += element.offsetLeft;
+            element = element.offsetParent;
+        }
+        return allLeft;
+    }
+    function getAllTop(element){
+        var allTop = 0;
+        while(element){
+            allTop += element.offsetTop;
+            element = element.offsetParent;
+        }
+        return allTop;
+    }
